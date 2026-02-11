@@ -2,7 +2,7 @@
 # command_parser.py - Parses voice commands
 import re
 
-FIXED_VOLUME = 5.0  # Set your desired lot size here
+FIXED_VOLUME = 0.50  # Set your desired lot size here
 
 def parse_command(text: str):
     """
