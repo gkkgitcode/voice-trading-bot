@@ -67,7 +67,7 @@ def trade():
             "price": price,
             "deviation": 10,
             "magic": 20250803,
-            "comment": "TextCmd",
+            "comment": "GKK_Gold_Entry",
             "type_time": mt5.ORDER_TIME_GTC,
             "type_filling": mt5.ORDER_FILLING_IOC
         }
@@ -96,7 +96,7 @@ def trade():
                 "price": price,
                 "deviation": 10,
                 "magic": 20250803,
-                "comment": "VoiceExit",
+                "comment": "GKK_Gold_Exit",
                 "type_time": mt5.ORDER_TIME_GTC,
                 "type_filling": mt5.ORDER_FILLING_IOC
             }
