@@ -2,7 +2,7 @@
 # command_parser.py - Parses voice commands
 import re
 
-FIXED_VOLUME = 0.01  # Set your desired lot size here
+#FIXED_VOLUME = 0.01  # Set your desired lot size here
 
 def parse_command(text: str):
     """
@@ -22,10 +22,16 @@ def parse_command(text: str):
         return {'action': 'exit', 'target': 'all'}
 
     if text in ['b', 'buy']:
-        return {'action': 'buy', 'volume': FIXED_VOLUME, 'target': 'all'}
+        return {'action': 'buy', 'target': 'all'}
 
     if text in ['s', 'sell']:
-        return {'action': 'sell', 'volume': FIXED_VOLUME, 'target': 'all'}
+        return {'action': 'sell', 'target': 'all'}
+
+    # if text in ['b', 'buy']:
+    #     return {'action': 'buy', 'volume': FIXED_VOLUME, 'target': 'all'}
+
+    # if text in ['s', 'sell']:
+    #     return {'action': 'sell', 'volume': FIXED_VOLUME, 'target': 'all'}
 
     return None
 
