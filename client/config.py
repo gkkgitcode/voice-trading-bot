@@ -1,12 +1,12 @@
 # config.py - Remote desktop configuration
 # List up to 10 clients
 REMOTE_SERVERS = [
-    {"id": "Client 1 - GOAT1 - 5K", "host": "192.168.1.3", "port": 5001, "lot": 0.01},
-    {"id": "Client 2 - GOAT2 - 5K", "host": "192.168.1.3", "port": 5002, "lot": 0.01},
-    {"id": "Client 3 - GOAT3 - 5K", "host": "192.168.1.3", "port": 5003, "lot": 0.02},
-    {"id": "Client 4 - FNDPP1 - 5K", "host": "192.168.1.3", "port": 5004, "lot": 0.01},
-    {"id": "Client 5 - FNDPP2 - 5K", "host": "192.168.1.3", "port": 5005, "lot": 0.02},
-    {"id": "Client Master - FNDPP3 - 5K", "host": "192.168.1.3", "port": 5000, "lot": 0.01},
+    {"id": "Client 1 - GOAT1 - 5K", "host": "192.168.1.6", "port": 5001, "lot": 0.01},
+    {"id": "Client 2 - GOAT2 - 5K", "host": "192.168.1.6", "port": 5002, "lot": 0.01},
+    {"id": "Client 3 - GOAT3 - 5K", "host": "192.168.1.6", "port": 5003, "lot": 0.02},
+    {"id": "Client 4 - FNDPP1 - 5K", "host": "192.168.1.6", "port": 5004, "lot": 0.01},
+    {"id": "Client 5 - FNDPP2 - 5K", "host": "192.168.1.6", "port": 5005, "lot": 0.02},
+    {"id": "Client Master - FNDPP3 - 5K", "host": "192.168.1.6", "port": 5000, "lot": 0.01},
     # add more up to Client 10...
 ]
 

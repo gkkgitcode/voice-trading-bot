@@ -153,7 +153,7 @@ def trade():
 
     action = data.get("action")
     volume = float(data.get("volume", 0))
-    symbol = data.get("symbol", "XAUUSD.x")
+    symbol = data.get("symbol", "XAUUSD")
 
     logging.info("🧠 Parsed command: action=%s, volume=%.2f, symbol=%s", action, volume, symbol)
 
