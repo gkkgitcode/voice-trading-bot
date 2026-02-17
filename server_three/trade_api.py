@@ -142,6 +142,35 @@ def risk_monitor_loop():
 
         time.sleep(10)   # check every 10 seconds
 
+# =========================
+# >>> NEW – P/L SNAPSHOT
+# =========================
+def get_pl_snapshot():
+    acc = mt5.account_info()
+    if not acc:
+        return {
+            "current_trade_pl": 0,
+            "today_pl": 0,
+            "today_pl_percent": 0
+        }
+
+    # >>> NEW – Current open trades P/L
+    positions = mt5.positions_get() or []
+    current_trade_pl = sum(p.profit for p in positions)
+
+    # >>> NEW – Today P/L from risk state
+    state = load_risk_state()
+    daily_open_balance = state.get("daily_open_balance", acc.balance)
+
+    today_pl = acc.equity - daily_open_balance
+    today_pl_percent = (today_pl / daily_open_balance) * 100 if daily_open_balance else 0
+
+    return {
+        "current_trade_pl": round(current_trade_pl, 2),
+        "today_pl": round(today_pl, 2),
+        "today_pl_percent": round(today_pl_percent, 2)
+    }
+
 @app.route("/trade", methods=["POST"])
 def trade():
     data = request.json or {}
@@ -240,9 +269,22 @@ def trade():
         mt5.shutdown()
         return jsonify({"error": "invalid action"}), 400
 
+    # mt5.shutdown()
+    # logging.info("🔌 MT5 shutdown complete.")
+    # return jsonify({"status": "ok"})
+
+    # >>> NEW – Capture P/L BEFORE shutdown
+    pl_data = get_pl_snapshot()
+
     mt5.shutdown()
     logging.info("🔌 MT5 shutdown complete.")
-    return jsonify({"status": "ok"})
+
+    # >>> CHANGED – Response now includes P/L
+    return jsonify({
+        "status": "ok",
+        "pl": pl_data
+    })
+
 
 if __name__ == "__main__":
     t = threading.Thread(target=risk_monitor_loop, daemon=True)
