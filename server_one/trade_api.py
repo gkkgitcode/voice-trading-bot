@@ -161,6 +161,17 @@ def get_pl_snapshot():
 
     # >>> NEW – Today P/L from risk state
     state = load_risk_state()
+    today = datetime.now().strftime("%Y-%m-%d")
+
+    # >>> ADD THIS BLOCK
+    if not state or state.get("date") != today:
+        state = {
+            "date": today,
+            "daily_open_balance": acc.balance,
+            "peak_balance": acc.balance
+        }
+        save_risk_state(state)
+    
     daily_open_balance = state.get("daily_open_balance", acc.balance)
 
     today_pl = acc.equity - daily_open_balance
