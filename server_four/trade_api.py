@@ -32,7 +32,7 @@ MT5_PATH = config.get("MT5", "path")
 # RISK CONFIG
 # =========================
 RISK_FILE = "risk_state.json"
-DAILY_LIMIT = 0.009   # 0.90%
+DAILY_LIMIT = 0.019   # 0.90%
 PEAK_LIMIT = 0.019    # 1.90%
 
 def load_risk_state():
@@ -66,6 +66,7 @@ def risk_check():
     if state["date"] != today:
         state["date"] = today
         state["daily_open_balance"] = balance
+        state["peak_balance"] = balance
 
     # Update peak balance
     if balance > state["peak_balance"]:
