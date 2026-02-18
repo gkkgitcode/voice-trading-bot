@@ -28,8 +28,16 @@ def send_order(client, command):
     except Exception as e:
         print(f"❌ Error sending to {client['id']}: {e}")
 
+def get_dashboard(client):
+    url = f"http://{client['host']}:{client['port']}/dashboard"
+    try:
+        r = requests.get(url, timeout=5)
+        return client['id'], r.json()
+    except Exception as e:
+        return client['id'], {"error": str(e)}
+
 def main():
-    print("💬 Text Command Mode (type 'b', 's', or 'e' to exit; 'q' to quit)")
+    print("💬 Text Command Mode (type 'b', 's', or 'e' to exit or 'd' for dashbaord; 'q' to quit)")
 
     while True:
         user_input = input("Enter command: ").strip().lower()
@@ -38,6 +46,23 @@ def main():
             print("👋 Quitting text command bot...")
             break
 
+        if user_input == 'd':
+            results = []
+
+            with ThreadPoolExecutor(max_workers=len(REMOTE_SERVERS)) as executor:
+                futures = [executor.submit(get_dashboard, client) for client in REMOTE_SERVERS]
+
+                for future in as_completed(futures):
+                    results.append(future.result())
+
+            # PRINT CLEANLY AFTER THREADS FINISH
+            for server_id, data in results:
+                print(f"\n📊 {server_id} Dashboard")
+                for k, v in data.items():
+                    print(f"   {k}: {v}")
+
+            continue
+        
         command = parse_command(user_input)
         if command:
             command["api_key"] = API_KEY

@@ -296,6 +296,38 @@ def trade():
         "pl": pl_data
     })
 
+@app.route("/dashboard", methods=["GET"])
+def dashboard():
+    if not mt5.initialize(path=MT5_PATH, login=MT5_LOGIN,
+                          password=MT5_PASSWORD, server=MT5_SERVER):
+        return jsonify({"error": "MT5 init failed"}), 500
+
+    acc = mt5.account_info()
+    state = load_risk_state()
+
+    balance = acc.balance
+    equity = acc.equity
+
+    daily_open = state.get("daily_open_balance", balance)
+    peak_balance = state.get("peak_balance", balance)
+
+    today_pl = equity - daily_open
+    today_pl_percent = (today_pl / daily_open) * 100 if daily_open else 0
+
+    daily_drawdown_percent = ((daily_open - equity) / daily_open) * 100 if daily_open else 0
+    peak_drawdown_percent = ((peak_balance - equity) / peak_balance) * 100 if peak_balance else 0
+
+    mt5.shutdown()
+
+    return jsonify({
+        "balance": round(balance, 2),
+        "equity": round(equity, 2),
+        "today_pl": round(today_pl, 2),
+        "today_pl_percent": round(today_pl_percent, 2),
+        "daily_drawdown_percent": round(daily_drawdown_percent, 2),
+        "peak_drawdown_percent": round(peak_drawdown_percent, 2)
+    })
+
 if __name__ == "__main__":
     t = threading.Thread(target=risk_monitor_loop, daemon=True)
     t.start()
