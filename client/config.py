@@ -1,12 +1,12 @@
 # config.py - Remote desktop configuration
 # List up to 10 clients
 REMOTE_SERVERS = [
-    {"id": "Server1-GOAT1-5K", "host": "192.168.1.5", "port": 5001, "lot": 0.02},
-    {"id": "Server2-GOAT2-5K", "host": "192.168.1.5", "port": 5002, "lot": 0.02},
-    {"id": "Server3-GOAT3-5K", "host": "192.168.1.5", "port": 5003, "lot": 0.02},
-    {"id": "Server4-FNDPP1-5K", "host": "192.168.1.5", "port": 5004, "lot": 0.01},
-    {"id": "Server5-FNDPP2-5K", "host": "192.168.1.5", "port": 5005, "lot": 0.01},
-    {"id": "ServerM-FNDPP3-5K", "host": "192.168.1.5", "port": 5000, "lot": 0.01},
+    {"id": "Server1-GOAT1-5K", "host": "127.0.0.1", "port": 5001, "lot": 0.02},
+    {"id": "Server2-GOAT2-5K", "host": "127.0.0.1", "port": 5002, "lot": 0.02},
+    {"id": "Server3-GOAT3-5K", "host": "127.0.0.1", "port": 5003, "lot": 0.02},
+    {"id": "Server4-FNDPP1-5K", "host": "127.0.0.1", "port": 5004, "lot": 0.01},
+    {"id": "Server5-FNDPP2-5K", "host": "127.0.0.1", "port": 5005, "lot": 0.01},
+    {"id": "ServerM-FNDPP3-5K", "host": "127.0.0.1", "port": 5000, "lot": 0.01},
     # add more up to Client 10...
 ]
 

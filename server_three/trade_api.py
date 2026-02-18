@@ -1,13 +1,13 @@
 # trade_api.py - Flask app for MT5 execution with detailed logging
 import configparser
 import os
-import json                      # >>> NEW
-from datetime import datetime    # >>> NEW
+import json                      
+from datetime import datetime, timedelta    
 from flask import Flask, request, jsonify
 import MetaTrader5 as mt5
 import logging
-import threading              # >>> NEW
-import time                   # >>> NEW
+import threading              
+import time                   
 
 app = Flask(__name__)
 API_KEY = "YourSecureApiKeyHere"
@@ -314,13 +314,15 @@ def dashboard():
 
     today_pl = equity - daily_open
     today_pl_percent = (today_pl / daily_open) * 100 if daily_open else 0
-
+    
     daily_drawdown_percent = ((daily_open - equity) / daily_open) * 100 if daily_open else 0
     peak_drawdown_percent = ((peak_balance - equity) / peak_balance) * 100 if peak_balance else 0
 
     mt5.shutdown()
 
     return jsonify({
+        "today_open_balance": round(daily_open, 2),
+        "today_peak_balance": round(peak_balance, 2),
         "balance": round(balance, 2),
         "equity": round(equity, 2),
         "today_pl": round(today_pl, 2),
