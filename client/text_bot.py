@@ -37,10 +37,30 @@ def get_dashboard(client):
         return client['id'], {"error": str(e)}
 
 def main():
-    print("💬 Text Command Mode (type 'b', 's', or 'e' to exit or 'd' for dashbaord; 'q' to quit)")
-
+    #print("💬 Text Command Mode (type 'b' to Buy, 's' to Sell, or 'e' to Exit or 'd' for Dashbaord; 'q' to Quit)")
+    print("💬 Text Command Mode (type 'b' to Buy, 's' to Sell, 'e' to Exit All, 'h' to Exit 50%, 'd' for Dashboard; 'q' to Quit)")
     while True:
         user_input = input("Enter command: ").strip().lower()
+
+        if user_input == 'h':
+            command = {
+                "action": "exit_half"
+            }
+            command["api_key"] = API_KEY
+
+            with ThreadPoolExecutor(max_workers=len(REMOTE_SERVERS)) as executor:
+                futures = [
+                    executor.submit(send_order, client, command)
+                    for client in REMOTE_SERVERS
+                ]
+
+                for future in as_completed(futures):
+                    try:
+                        future.result()
+                    except Exception as e:
+                        print(f"⚠️ Thread error: {e}")
+
+            continue
 
         if user_input == 'q':
             print("👋 Quitting text command bot...")
@@ -80,28 +100,8 @@ def main():
                         future.result()
                     except Exception as e:
                         print(f"⚠️ Thread error: {e}")
-
-            # # 🚀 Send to all configured remote servers
-            # for client in REMOTE_SERVERS:
-            #     url = f"http://{client['host']}:{client['port']}/trade"
-                
-            #     client_command = command.copy()
-
-            #     # Add lot size only for buy/sell
-            #     if client_command["action"] in ["buy", "sell"]:
-            #         client_command["volume"] = client.get("lot", 0.01)
-            #     print(f"➡️ Sending to {client['id']} → {url} → {client_command}")
-
-            #     try:
-            #         response = requests.post(url, json=client_command, timeout=10)
-            #     # print(f"➡️ Sending to {client['id']} → {url} → {command}")
-            #     # try:
-            #     #     response = requests.post(url, json=command, timeout=10)
-            #         print(f"✅ {client['id']} responded: {response.text}")
-            #     except Exception as e:
-            #         print(f"❌ Error sending to {client['id']}: {e}")
         else:
-            print("⚠️ Invalid command. Type 'b', 's', or 'e'.")
+            print("⚠️ Invalid command. Type 'b', 's', 'd', 'q' or 'e'.")
 
 if __name__ == "__main__":
     main()

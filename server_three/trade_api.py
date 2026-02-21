@@ -89,7 +89,7 @@ def risk_check():
 # =========================
 
 # ==================================================
-# >>> NEW – CLOSE ALL POSITIONS (AUTO RISK CONTROL)
+# >>> CLOSE ALL POSITIONS (AUTO RISK CONTROL)
 # ==================================================
 def close_all_positions():
     positions = mt5.positions_get() or []
@@ -120,13 +120,14 @@ def close_all_positions():
 
 
 # ==================================================
-# >>> NEW – LIVE RISK MONITOR THREAD
+# >>> LIVE RISK MONITOR THREAD
 # ==================================================
 def risk_monitor_loop():
     while True:
         try:
-            if not mt5.initialize(path=MT5_PATH, login=MT5_LOGIN,
-                                  password=MT5_PASSWORD, server=MT5_SERVER):
+            acc = mt5.account_info()
+            if not acc:
+                logging.error("MT5 connection lost in monitor")
                 time.sleep(5)
                 continue
 
@@ -135,8 +136,6 @@ def risk_monitor_loop():
             if not allowed:
                 logging.error(f"🚨 LIVE RISK HIT: {reason}")
                 close_all_positions()
-
-            mt5.shutdown()
 
         except Exception as e:
             logging.error(f"Risk Monitor Error: {e}")
@@ -197,20 +196,11 @@ def trade():
     symbol = data.get("symbol", "XAUUSD.x")
 
     logging.info("🧠 Parsed command: action=%s, volume=%.2f, symbol=%s", action, volume, symbol)
-
-    # Initialize MT5
-    logging.info("🔌 Initializing MetaTrader 5...")
-    if not mt5.initialize(path=MT5_PATH, login=MT5_LOGIN, password=MT5_PASSWORD, server=MT5_SERVER):
-        error_msg = mt5.last_error()
-        logging.error(f"❌ MT5 initialization failed: {error_msg}")
-        return jsonify({"error": "MT5 init failed"}), 500
-    logging.info("✅ MT5 initialized successfully.")
-
+    
     result = None
 
     if action in ("buy", "sell") and volume <= 0:
         logging.error("❌ Invalid volume received: %s", volume)
-        mt5.shutdown()
         return jsonify({"error": "invalid volume"}), 400
     
     if action in ("buy", "sell"):
@@ -219,7 +209,6 @@ def trade():
         allowed, reason = risk_check()
         if not allowed:
             logging.warning(f"🛑 Trading blocked: {reason}")
-            mt5.shutdown()
             return jsonify({"error": reason}), 403        
         
         order_type = mt5.ORDER_TYPE_BUY if action == "buy" else mt5.ORDER_TYPE_SELL
@@ -227,7 +216,6 @@ def trade():
 
         if not tick:
             logging.error(f"❌ Could not fetch tick data for symbol: {symbol}")
-            mt5.shutdown()
             return jsonify({"error": "tick fetch failed"}), 500
 
         price = tick.ask if order_type == mt5.ORDER_TYPE_BUY else tick.bid
@@ -247,6 +235,44 @@ def trade():
         logging.info("📤 Sending trade order: %s", request_params)
         result = mt5.order_send(request_params)
         logging.info("📬 Order response: %s", result)
+
+    elif action == "exit_half":
+        positions = mt5.positions_get()
+
+        if not positions:
+            return jsonify({"message": "No open positions"})
+
+        total_positions = len(positions)
+        positions_to_close = total_positions // 2
+
+        if positions_to_close == 0:
+            return jsonify({"message": "Only 1 position open. Nothing to close."})
+
+        closed = 0
+
+        for pos in positions[:positions_to_close]:
+            close_request = {
+                "action": mt5.TRADE_ACTION_DEAL,
+                "symbol": pos.symbol,
+                "volume": pos.volume,
+                "type": mt5.ORDER_TYPE_SELL if pos.type == 0 else mt5.ORDER_TYPE_BUY,
+                "position": pos.ticket,
+                "price": mt5.symbol_info_tick(pos.symbol).bid if pos.type == 0 else mt5.symbol_info_tick(pos.symbol).ask,
+                "deviation": 20,
+                "magic": 123456,
+                "comment": "Half Exit",
+                "type_time": mt5.ORDER_TIME_GTC,
+                "type_filling": mt5.ORDER_FILLING_IOC,
+            }
+
+            result = mt5.order_send(close_request)
+
+            if result.retcode == mt5.TRADE_RETCODE_DONE:
+                closed += 1
+
+        return jsonify({
+            "message": f"Closed {closed} of {total_positions} positions"
+        })
 
     elif action == "exit":
         logging.info("🔍 Fetching open positions for symbol: %s", symbol)
@@ -278,20 +304,12 @@ def trade():
 
     else:
         logging.error("❌ Invalid action: %s", action)
-        mt5.shutdown()
         return jsonify({"error": "invalid action"}), 400
 
-    # mt5.shutdown()
-    # logging.info("🔌 MT5 shutdown complete.")
-    # return jsonify({"status": "ok"})
-
-    # >>> NEW – Capture P/L BEFORE shutdown
+    # Capture P/L 
     pl_data = get_pl_snapshot()
 
-    mt5.shutdown()
-    logging.info("🔌 MT5 shutdown complete.")
-
-    # >>> CHANGED – Response now includes P/L
+    # Response now includes P/L
     return jsonify({
         "status": "ok",
         "pl": pl_data
@@ -299,10 +317,7 @@ def trade():
 
 @app.route("/dashboard", methods=["GET"])
 def dashboard():
-    if not mt5.initialize(path=MT5_PATH, login=MT5_LOGIN,
-                          password=MT5_PASSWORD, server=MT5_SERVER):
-        return jsonify({"error": "MT5 init failed"}), 500
-
+    
     acc = mt5.account_info()
     state = load_risk_state()
 
@@ -318,8 +333,6 @@ def dashboard():
     daily_drawdown_percent = ((daily_open - equity) / daily_open) * 100 if daily_open else 0
     peak_drawdown_percent = ((peak_balance - equity) / peak_balance) * 100 if peak_balance else 0
 
-    mt5.shutdown()
-
     return jsonify({
         "today_open_balance": round(daily_open, 2),
         "today_peak_balance": round(peak_balance, 2),
@@ -331,7 +344,32 @@ def dashboard():
         "peak_drawdown_percent": round(peak_drawdown_percent, 2)
     })
 
+import atexit
+
+def shutdown_mt5():
+    print("🔌 Shutting down MT5...")
+    mt5.shutdown()
+
 if __name__ == "__main__":
+
+    # ✅ Initialize MT5 ONCE at startup
+    if not mt5.initialize(
+        path=MT5_PATH,
+        login=MT5_LOGIN,
+        password=MT5_PASSWORD,
+        server=MT5_SERVER
+    ):
+        print("❌ MT5 Initialization Failed:", mt5.last_error())
+        exit()
+
+    print("✅ MT5 Connected Successfully")
+
+    # ✅ Register shutdown handler
+    atexit.register(shutdown_mt5)
+
+    # ✅ Start live risk monitor thread
     t = threading.Thread(target=risk_monitor_loop, daemon=True)
     t.start()
+
+    # ✅ Start Flask
     app.run(host="0.0.0.0", port=5003)
