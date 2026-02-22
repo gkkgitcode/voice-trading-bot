@@ -236,31 +236,81 @@ def trade():
         result = mt5.order_send(request_params)
         logging.info("📬 Order response: %s", result)
 
-    elif action == "exit_half":
+    # elif action == "exit_half":
+    #     positions = mt5.positions_get()
+
+    #     if not positions:
+    #         return jsonify({"message": "No open positions"})
+
+    #     total_positions = len(positions)
+    #     positions_to_close = total_positions // 2
+
+    #     if positions_to_close == 0:
+    #         return jsonify({"message": "Only 1 position open. Nothing to close."})
+
+    #     closed = 0
+
+    #     for pos in positions[:positions_to_close]:
+    #         close_request = {
+    #             "action": mt5.TRADE_ACTION_DEAL,
+    #             "symbol": pos.symbol,
+    #             "volume": pos.volume,
+    #             "type": mt5.ORDER_TYPE_SELL if pos.type == 0 else mt5.ORDER_TYPE_BUY,
+    #             "position": pos.ticket,
+    #             "price": mt5.symbol_info_tick(pos.symbol).bid if pos.type == 0 else mt5.symbol_info_tick(pos.symbol).ask,
+    #             "deviation": 20,
+    #             "magic": 123456,
+    #             "comment": "Half Exit",
+    #             "type_time": mt5.ORDER_TIME_GTC,
+    #             "type_filling": mt5.ORDER_FILLING_IOC,
+    #         }
+
+    #         result = mt5.order_send(close_request)
+
+    #         if result.retcode == mt5.TRADE_RETCODE_DONE:
+    #             closed += 1
+
+    #     return jsonify({
+    #         "message": f"Closed {closed} of {total_positions} positions"
+    #     })
+
+    elif action == "exit_latest":
+
+        count = int(request.json.get("count", 2))  # how many to close
+
         positions = mt5.positions_get()
 
         if not positions:
             return jsonify({"message": "No open positions"})
 
         total_positions = len(positions)
-        positions_to_close = total_positions // 2
 
-        if positions_to_close == 0:
-            return jsonify({"message": "Only 1 position open. Nothing to close."})
+        # Prevent trying to close more than available
+        count = min(count, total_positions)
+
+        # Sort newest first
+        sorted_positions = sorted(positions, key=lambda x: x.time, reverse=True)
+
+        positions_to_close = sorted_positions[:count]
 
         closed = 0
 
-        for pos in positions[:positions_to_close]:
+        for pos in positions_to_close:
+
+            tick = mt5.symbol_info_tick(pos.symbol)
+            if not tick:
+                continue
+
             close_request = {
                 "action": mt5.TRADE_ACTION_DEAL,
                 "symbol": pos.symbol,
                 "volume": pos.volume,
                 "type": mt5.ORDER_TYPE_SELL if pos.type == 0 else mt5.ORDER_TYPE_BUY,
                 "position": pos.ticket,
-                "price": mt5.symbol_info_tick(pos.symbol).bid if pos.type == 0 else mt5.symbol_info_tick(pos.symbol).ask,
+                "price": tick.bid if pos.type == 0 else tick.ask,
                 "deviation": 20,
                 "magic": 123456,
-                "comment": "Half Exit",
+                "comment": "Close Latest",
                 "type_time": mt5.ORDER_TIME_GTC,
                 "type_filling": mt5.ORDER_FILLING_IOC,
             }
@@ -271,9 +321,9 @@ def trade():
                 closed += 1
 
         return jsonify({
-            "message": f"Closed {closed} of {total_positions} positions"
+            "message": f"Closed {closed} latest positions"
         })
-    
+        
     elif action == "exit":
         logging.info("🔍 Fetching open positions for symbol: %s", symbol)
         positions = mt5.positions_get(symbol=symbol) or []
