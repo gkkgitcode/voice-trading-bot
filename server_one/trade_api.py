@@ -310,11 +310,21 @@ def trade():
     pl_data = get_pl_snapshot()
 
     # Response now includes P/L
+    # return jsonify({
+    #     "status": "ok",
+    #     "pl": pl_data
+    # })
     return jsonify({
-        "status": "ok",
-        "pl": pl_data
+    "status": "ok",
+    "server_time": datetime.now().isoformat(),
+    "action": action,
+    "symbol": symbol,
+    "volume": volume,
+    "ticket": result.order if result else None,
+    "retcode": result.retcode if result else None,
+    "comment": result.comment if result else None,
+    "pl": pl_data
     })
-
 @app.route("/dashboard", methods=["GET"])
 def dashboard():
         
