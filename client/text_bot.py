@@ -154,7 +154,7 @@ def main():
 
         if user_input == 'h':
             command = {
-                "action": "exit_half"
+                "action": "exit_latest"
             }
             command["api_key"] = API_KEY
 

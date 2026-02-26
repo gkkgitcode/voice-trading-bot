@@ -136,8 +136,6 @@ def risk_monitor_loop():
                 logging.error(f"🚨 LIVE RISK HIT: {reason}")
                 close_all_positions()
 
-            mt5.shutdown()
-
         except Exception as e:
             logging.error(f"Risk Monitor Error: {e}")
 
@@ -202,7 +200,6 @@ def trade():
 
     if action in ("buy", "sell") and volume <= 0:
         logging.error("❌ Invalid volume received: %s", volume)
-        mt5.shutdown()
         return jsonify({"error": "invalid volume"}), 400
     
     if action in ("buy", "sell"):
@@ -377,6 +374,7 @@ def trade():
     "comment": result.comment if result else None,
     "pl": pl_data
     })
+
 @app.route("/dashboard", methods=["GET"])
 def dashboard():
     
