@@ -276,52 +276,70 @@ def trade():
 
     elif action == "exit_latest":
 
-        count = int(request.json.get("count", 2))  # how many to close
+        count = int(request.json.get("count", 1))  # default close 1
 
         positions = mt5.positions_get()
-
         if not positions:
             return jsonify({"message": "No open positions"})
 
-        total_positions = len(positions)
+        # ✅ Use time_update (fallback to time)
+        positions = sorted(
+            positions,
+            key=lambda p: p.time_update if p.time_update > 0 else p.time,
+            reverse=True
+        )
 
-        # Prevent trying to close more than available
-        count = min(count, total_positions)
-
-        # Sort newest first
-        sorted_positions = sorted(positions, key=lambda x: x.time, reverse=True)
-
-        positions_to_close = sorted_positions[:count]
-
+        positions_to_close = positions[:count]
         closed = 0
+        errors = []
 
         for pos in positions_to_close:
 
-            tick = mt5.symbol_info_tick(pos.symbol)
-            if not tick:
+            symbol = pos.symbol
+            tick = mt5.symbol_info_tick(symbol)
+            symbol_info = mt5.symbol_info(symbol)
+
+            if not tick or not symbol_info:
+                errors.append(f"{symbol}: Tick/Symbol info missing")
                 continue
 
-            close_request = {
+            # ✅ Correct close price
+            if pos.type == mt5.POSITION_TYPE_BUY:
+                close_type = mt5.ORDER_TYPE_SELL
+                price = tick.bid
+            else:
+                close_type = mt5.ORDER_TYPE_BUY
+                price = tick.ask
+
+            request_close = {
                 "action": mt5.TRADE_ACTION_DEAL,
-                "symbol": pos.symbol,
-                "volume": pos.volume,
-                "type": mt5.ORDER_TYPE_SELL if pos.type == 0 else mt5.ORDER_TYPE_BUY,
+                "symbol": symbol,
                 "position": pos.ticket,
-                "price": tick.bid if pos.type == 0 else tick.ask,
+                "volume": pos.volume,
+                "type": close_type,
+                "price": price,
                 "deviation": 20,
                 "magic": 123456,
-                "comment": "Close Latest",
+                "comment": "Close Latest Position",
                 "type_time": mt5.ORDER_TIME_GTC,
-                "type_filling": mt5.ORDER_FILLING_IOC,
+                # ✅ use broker-supported filling
+                "type_filling": symbol_info.filling_mode,
             }
 
-            result = mt5.order_send(close_request)
+            result = mt5.order_send(request_close)
 
-            if result.retcode == mt5.TRADE_RETCODE_DONE:
+            if result and result.retcode == mt5.TRADE_RETCODE_DONE:
                 closed += 1
+            else:
+                errors.append(
+                    f"{symbol} ticket {pos.ticket} failed: "
+                    f"{result.retcode if result else 'No result'}"
+                )
 
         return jsonify({
-            "message": f"Closed {closed} latest positions"
+            "closed": closed,
+            "requested": count,
+            "errors": errors
         })
         
     elif action == "exit":
