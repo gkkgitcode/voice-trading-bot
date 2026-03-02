@@ -323,7 +323,7 @@ def trade():
                 "comment": "Close Latest Position",
                 "type_time": mt5.ORDER_TIME_GTC,
                 # ✅ use broker-supported filling
-                "type_filling": symbol_info.filling_mode,
+                "type_filling": mt5.ORDER_FILLING_IOC,
             }
 
             result = mt5.order_send(request_close)
