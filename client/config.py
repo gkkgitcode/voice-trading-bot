@@ -1,12 +1,12 @@
 # config.py - Remote desktop configuration
 # List up to 10 clients
 REMOTE_SERVERS = [
-    {"id": "MQ1-100k", "host": "127.0.0.1", "port": 5001, "lot": 0.50},
-    {"id": "MQ2-100k", "host": "127.0.0.1", "port": 5002, "lot": 0.50},
-    {"id": "MQ3-100k", "host": "127.0.0.1", "port": 5003, "lot": 0.50},
-    {"id": "MQ4-100k", "host": "127.0.0.1", "port": 5004, "lot": 0.50},
-    {"id": "MQ5-100k", "host": "127.0.0.1", "port": 5005, "lot": 0.50},
-    {"id": "MQM-100k", "host": "127.0.0.1", "port": 5000, "lot": 0.50},
+    {"id": "GT1-314583127-5k", "host": "127.0.0.1", "port": 5001, "lot": 0.01},
+    {"id": "GT2-314583129-5k", "host": "127.0.0.1", "port": 5002, "lot": 0.01},
+    {"id": "GT3-314583132-5k", "host": "127.0.0.1", "port": 5003, "lot": 0.01},
+    {"id": "GT4-314583128-10k", "host": "127.0.0.1", "port": 5004, "lot": 0.01},
+    {"id": "GT5-314583130-10k", "host": "127.0.0.1", "port": 5005, "lot": 0.01},
+    {"id": "GT6-314583133-10k", "host": "127.0.0.1", "port": 5000, "lot": 0.01},
     # add more up to Client 10...
 ]
 

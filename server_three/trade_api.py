@@ -32,8 +32,8 @@ MT5_PATH = config.get("MT5", "path")
 # RISK CONFIG
 # =========================
 RISK_FILE = "risk_state.json"
-DAILY_LIMIT = 0.019   # 0.90%
-PEAK_LIMIT = 0.019    # 1.90%
+DAILY_LIMIT = 0.029   # 0.90%
+PEAK_LIMIT = 0.039    # 1.90%
 
 def load_risk_state():
     if not os.path.exists(RISK_FILE):
@@ -193,7 +193,7 @@ def trade():
 
     action = data.get("action")
     volume = float(data.get("volume", 0))
-    symbol = data.get("symbol", "XAUUSD")
+    symbol = data.get("symbol", "XAUUSD.x")
 
     logging.info("🧠 Parsed command: action=%s, volume=%.2f, symbol=%s", action, volume, symbol)
     
