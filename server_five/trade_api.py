@@ -442,7 +442,16 @@ if __name__ == "__main__":
         print("❌ MT5 Initialization Failed:", mt5.last_error())
         exit()
 
-    print("✅ MT5 Connected Successfully")
+    # Fetch account information
+    account_info = mt5.account_info()
+
+    if account_info:
+        print("✅ MT5 Connected Successfully")
+        print("📡 Server:", account_info.server)
+        print("👤 Account:", account_info.login)
+        print("💰 Balance:", account_info.balance)
+    else:
+        print("⚠ Could not fetch account info")
 
     # ✅ Register shutdown handler
     atexit.register(shutdown_mt5)

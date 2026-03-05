@@ -1,0 +1,11 @@
+Start-Process powershell -ArgumentList "cd server_one; .\venv\Scripts\activate; python trade_api.py"
+Start-Process powershell -ArgumentList "cd server_two; .\venv\Scripts\activate; python trade_api.py"
+Start-Process powershell -ArgumentList "cd server_three; .\venv\Scripts\activate; python trade_api.py"
+Start-Process powershell -ArgumentList "cd server_four; .\venv\Scripts\activate; python trade_api.py"
+Start-Process powershell -ArgumentList "cd server_five; .\venv\Scripts\activate; python trade_api.py"
+Start-Process powershell -ArgumentList "cd server_six; .\venv\Scripts\activate; python trade_api.py"
+Start-Process powershell -ArgumentList "cd server_seven; .\venv\Scripts\activate; python trade_api.py"
+Start-Process powershell -ArgumentList "cd server_eight; .\venv\Scripts\activate; python trade_api.py"
+Start-Process powershell -ArgumentList "cd server_Master; .\venv\Scripts\activate; python trade_api.py"
+
+Start-Process powershell -ArgumentList "cd client; .\venv\Scripts\activate; python text_bot.py"

@@ -32,7 +32,7 @@ MT5_PATH = config.get("MT5", "path")
 # RISK CONFIG
 # =========================
 RISK_FILE = "risk_state.json"
-DAILY_LIMIT = 0.019   # 0.90%
+DAILY_LIMIT = 0.029   # 0.90%
 PEAK_LIMIT = 0.039    # 1.90%
 
 def load_risk_state():
@@ -441,8 +441,17 @@ if __name__ == "__main__":
         print("❌ MT5 Initialization Failed:", mt5.last_error())
         exit()
 
-    print("✅ MT5 Connected Successfully")
+    # Fetch account information
+    account_info = mt5.account_info()
 
+    if account_info:
+        print("✅ MT5 Connected Successfully")
+        print("📡 Server:", account_info.server)
+        print("👤 Account:", account_info.login)
+        print("💰 Balance:", account_info.balance)
+    else:
+        print("⚠ Could not fetch account info")
+        
     # ✅ Register shutdown handler
     atexit.register(shutdown_mt5)
 

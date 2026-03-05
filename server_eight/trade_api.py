@@ -32,7 +32,7 @@ MT5_PATH = config.get("MT5", "path")
 # RISK CONFIG
 # =========================
 RISK_FILE = "risk_state.json"
-DAILY_LIMIT = 0.029   # 1.90%
+DAILY_LIMIT = 0.029   # 0.90%
 PEAK_LIMIT = 0.039    # 1.90%
 
 def load_risk_state():
@@ -136,6 +136,7 @@ def risk_monitor_loop():
             if not allowed:
                 logging.error(f"🚨 LIVE RISK HIT: {reason}")
                 close_all_positions()
+ 
 
         except Exception as e:
             logging.error(f"Risk Monitor Error: {e}")
@@ -154,11 +155,11 @@ def get_pl_snapshot():
             "today_pl_percent": 0
         }
 
-    # >>> NEW – Current open trades P/L
+    # Current open trades P/L
     positions = mt5.positions_get() or []
     current_trade_pl = sum(p.profit for p in positions)
 
-    # >>> NEW – Today P/L from risk state
+    # Today P/L from risk state
     state = load_risk_state()
     today = datetime.now().strftime("%Y-%m-%d")
 
@@ -170,7 +171,8 @@ def get_pl_snapshot():
             "peak_balance": acc.balance
         }
         save_risk_state(state)
-   
+    
+    
     daily_open_balance = state.get("daily_open_balance", acc.balance)
 
     today_pl = acc.equity - daily_open_balance
@@ -196,7 +198,7 @@ def trade():
     symbol = data.get("symbol", "XAUUSD.x")
 
     logging.info("🧠 Parsed command: action=%s, volume=%.2f, symbol=%s", action, volume, symbol)
-    
+
     result = None
 
     if action in ("buy", "sell") and volume <= 0:
@@ -341,7 +343,7 @@ def trade():
             "requested": count,
             "errors": errors
         })
-        
+
     elif action == "exit":
         logging.info("🔍 Fetching open positions for symbol: %s", symbol)
         positions = mt5.positions_get(symbol=symbol) or []
@@ -374,7 +376,7 @@ def trade():
         logging.error("❌ Invalid action: %s", action)
         return jsonify({"error": "invalid action"}), 400
 
-    # Capture P/L
+    # Capture P/L 
     pl_data = get_pl_snapshot()
 
     # Response now includes P/L
@@ -395,7 +397,7 @@ def trade():
     })
 @app.route("/dashboard", methods=["GET"])
 def dashboard():
-        
+    
     acc = mt5.account_info()
     state = load_risk_state()
 
@@ -404,7 +406,7 @@ def dashboard():
 
     daily_open = state.get("daily_open_balance", balance)
     peak_balance = state.get("peak_balance", balance)
-
+    
     today_pl = equity - daily_open
     today_pl_percent = (today_pl / daily_open) * 100 if daily_open else 0
     
@@ -412,7 +414,7 @@ def dashboard():
     peak_drawdown_percent = ((peak_balance - equity) / peak_balance) * 100 if peak_balance else 0
 
     return jsonify({
-        "today_open_balance": round(daily_open, 2),
+        "today_open_balance": round(daily_open, 2),  
         "today_peak_balance": round(peak_balance, 2),
         "balance": round(balance, 2),
         "equity": round(equity, 2),
@@ -459,4 +461,4 @@ if __name__ == "__main__":
     t.start()
 
     # ✅ Start Flask
-    app.run(host="0.0.0.0", port=5002)
+    app.run(host="0.0.0.0", port=5008)
