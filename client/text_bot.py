@@ -148,7 +148,7 @@ def get_dashboard(client):
 
 def main():
     #print("💬 Text Command Mode (type 'b' to Buy, 's' to Sell, or 'e' to Exit or 'd' for Dashbaord; 'q' to Quit)")
-    print("💬 Text Command Mode (type 'b' to Buy, 's' to Sell, 'e' to Exit All, 'h' to Exit 50%, 'd' for Dashboard; 'q' to Quit)")
+    print("💬 Text Command Mode type \n 'b' to Buy \n 's' to Sell \n 'e' to Exit All \n 'h' to Exit 50% \n 'sl value' to update SL \n 't value' to update Target \n 'd' for Dashboard \n 'q' to Quit")
     while True:
         user_input = input("Enter command: ").strip().lower()
 

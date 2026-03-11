@@ -16,24 +16,51 @@ def parse_command(text: str):
       target: "all"
     }
     """
-    text = text.lower().strip()
-
-    if text in ['e', 'exit']:
-        return {'action': 'exit', 'target': 'all'}
-
-    if text in ['b', 'buy']:
-        return {'action': 'buy', 'target': 'all'}
-
-    if text in ['s', 'sell']:
-        return {'action': 'sell', 'target': 'all'}
+    # text = text.lower().strip()
+        
+    # if text in ['e', 'exit']:
+    #     return {'action': 'exit', 'target': 'all'}
 
     # if text in ['b', 'buy']:
-    #     return {'action': 'buy', 'volume': FIXED_VOLUME, 'target': 'all'}
+    #     return {'action': 'buy', 'target': 'all'}
 
     # if text in ['s', 'sell']:
-    #     return {'action': 'sell', 'volume': FIXED_VOLUME, 'target': 'all'}
+    #     return {'action': 'sell', 'target': 'all'}
 
-    return None
+    # return None
+
+    parts = text.split()
+
+    # BUY
+    if text == "b":
+        return {"action": "buy"}
+
+    # SELL
+    if text == "s":
+        return {"action": "sell"}
+
+    # EXIT LATEST and HALF POSITIONS
+    if text == "h":
+        return {"action": "exit_latest"}
+    
+    # EXIT ALL
+    if text == "e":
+        return {"action": "exit"}
+
+    # UPDATE SL
+    if parts[0] == "sl" and len(parts) == 2:
+        return {
+            "action": "update_sl",
+            "sl": float(parts[1])
+        }
+
+    # UPDATE TP
+    if parts[0] == "t" and len(parts) == 2:
+        return {
+            "action": "update_tp",
+            "tp": float(parts[1])
+        }
+
 
 # import re
 

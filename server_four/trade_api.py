@@ -192,7 +192,7 @@ def trade():
 
     action = data.get("action")
     volume = float(data.get("volume", 0))
-    symbol = data.get("symbol", "XAUUSD.x")
+    symbol = data.get("symbol", "XAUUSD")
 
     logging.info("🧠 Parsed command: action=%s, volume=%.2f, symbol=%s", action, volume, symbol)
 
@@ -234,44 +234,6 @@ def trade():
         logging.info("📤 Sending trade order: %s", request_params)
         result = mt5.order_send(request_params)
         logging.info("📬 Order response: %s", result)
-
-    # elif action == "exit_half":
-    #     positions = mt5.positions_get()
-
-    #     if not positions:
-    #         return jsonify({"message": "No open positions"})
-
-    #     total_positions = len(positions)
-    #     positions_to_close = total_positions // 2
-
-    #     if positions_to_close == 0:
-    #         return jsonify({"message": "Only 1 position open. Nothing to close."})
-
-    #     closed = 0
-
-    #     for pos in positions[:positions_to_close]:
-    #         close_request = {
-    #             "action": mt5.TRADE_ACTION_DEAL,
-    #             "symbol": pos.symbol,
-    #             "volume": pos.volume,
-    #             "type": mt5.ORDER_TYPE_SELL if pos.type == 0 else mt5.ORDER_TYPE_BUY,
-    #             "position": pos.ticket,
-    #             "price": mt5.symbol_info_tick(pos.symbol).bid if pos.type == 0 else mt5.symbol_info_tick(pos.symbol).ask,
-    #             "deviation": 20,
-    #             "magic": 123456,
-    #             "comment": "Half Exit",
-    #             "type_time": mt5.ORDER_TIME_GTC,
-    #             "type_filling": mt5.ORDER_FILLING_IOC,
-    #         }
-
-    #         result = mt5.order_send(close_request)
-
-    #         if result.retcode == mt5.TRADE_RETCODE_DONE:
-    #             closed += 1
-
-    #     return jsonify({
-    #         "message": f"Closed {closed} of {total_positions} positions"
-    #     })
 
     elif action == "exit_latest":
 
@@ -368,6 +330,67 @@ def trade():
             logging.info("📤 Closing position: %s", close_request)
             close_result = mt5.order_send(close_request)
             logging.info("📬 Close response: %s", close_result)
+
+
+    elif action == "update_sl":
+
+        sl = float(data.get("sl", 0))
+        positions = mt5.positions_get() or []
+
+        count = 0
+
+        for pos in positions:
+
+            request_sl = {
+                "action": mt5.TRADE_ACTION_SLTP,
+                "symbol": pos.symbol,
+                "position": pos.ticket,
+                "sl": sl,
+                "tp": pos.tp
+            }
+
+            res = mt5.order_send(request_sl)
+
+            if res and res.retcode == mt5.TRADE_RETCODE_DONE:
+                count += 1
+
+        logging.info(f"SL updated for {count} positions")
+
+        return jsonify({
+            "status": "ok",
+            "action": "update_sl",
+            "updated_positions": count
+        })
+
+    elif action == "update_tp":
+
+        tp = float(data.get("tp", 0))
+        positions = mt5.positions_get() or []
+
+        count = 0
+
+        for pos in positions:
+
+            request_tp = {
+                "action": mt5.TRADE_ACTION_SLTP,
+                "symbol": pos.symbol,
+                "position": pos.ticket,
+                "sl": pos.sl,
+                "tp": tp
+            }
+
+            res = mt5.order_send(request_tp)
+
+            if res and res.retcode == mt5.TRADE_RETCODE_DONE:
+                count += 1
+
+        logging.info(f"TP updated for {count} positions")
+
+        return jsonify({
+            "status": "ok",
+            "action": "update_tp",
+            "updated_positions": count
+        })
 
     else:
         logging.error("❌ Invalid action: %s", action)
