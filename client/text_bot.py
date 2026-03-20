@@ -239,11 +239,16 @@ def main():
                 if total_today_open_balance else 0
             )
 
+            # master_daily_dd_percent = (
+            #     ((total_today_open_balance - total_equity) / total_today_open_balance) * 100
+            #     if total_today_open_balance else 0
+            # )
+            
             master_daily_dd_percent = (
-                ((total_today_open_balance - total_equity) / total_today_open_balance) * 100
-                if total_today_open_balance else 0
+                ((total_equity - total_peak_balance) / total_peak_balance) * 100
+                if total_peak_balance else 0
             )
-
+            
             master_peak_dd_percent = (
                 ((total_peak_balance - total_equity) / total_peak_balance) * 100
                 if total_peak_balance else 0

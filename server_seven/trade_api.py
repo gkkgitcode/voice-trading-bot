@@ -420,7 +420,7 @@ def trade():
     })
 @app.route("/dashboard", methods=["GET"])
 def dashboard():
-    
+        
     acc = mt5.account_info()
     state = load_risk_state()
 
@@ -429,15 +429,25 @@ def dashboard():
 
     daily_open = state.get("daily_open_balance", balance)
     peak_balance = state.get("peak_balance", balance)
-    
+
     today_pl = equity - daily_open
     today_pl_percent = (today_pl / daily_open) * 100 if daily_open else 0
     
-    daily_drawdown_percent = ((daily_open - equity) / daily_open) * 100 if daily_open else 0
+    today_peak = state.get("today_peak_balance", equity)
+
+    if equity > today_peak:
+        today_peak = equity
+        state["today_peak_balance"] = today_peak
+        save_risk_state(state)
+
+    daily_drawdown_percent = ((equity - today_peak) / today_peak) * 100 if today_peak else 0
+    # daily_drawdown_percent = ((daily_open - equity) / daily_open) * 100 if daily_open else 0
     peak_drawdown_percent = ((peak_balance - equity) / peak_balance) * 100 if peak_balance else 0
 
+    
     return jsonify({
-        "today_open_balance": round(daily_open, 2),  
+        "today_open_balance": round(daily_open, 2),
+        "today_peak_balance": round(today_peak, 2),
         "today_peak_balance": round(peak_balance, 2),
         "balance": round(balance, 2),
         "equity": round(equity, 2),
@@ -446,6 +456,7 @@ def dashboard():
         "daily_drawdown_percent": round(daily_drawdown_percent, 2),
         "peak_drawdown_percent": round(peak_drawdown_percent, 2)
     })
+
 
 import atexit
 
