@@ -32,8 +32,8 @@ MT5_PATH = config.get("MT5", "path")
 # RISK CONFIG
 # =========================
 RISK_FILE = "risk_state.json"
-DAILY_LIMIT = 0.010   # 0.90%
-PEAK_LIMIT = 0.019    # 1.90%
+DAILY_LIMIT = 0.037   # 0.90%
+PEAK_LIMIT = 0.037    # 1.90%
 
 def load_risk_state():
     if not os.path.exists(RISK_FILE):

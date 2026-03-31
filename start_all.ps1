@@ -8,4 +8,4 @@ Start-Process powershell -ArgumentList "cd server_five; .\venv\Scripts\activate;
 # Start-Process powershell -ArgumentList "cd server_eight; .\venv\Scripts\activate; python trade_api.py"
 Start-Process powershell -ArgumentList "cd server_Master; .\venv\Scripts\activate; python trade_api.py"
 
-Start-Process powershell -ArgumentList "cd client; .\venv\Scripts\activate; python text_bot.py"
+# Start-Process powershell -ArgumentList "cd client; .\venv\Scripts\activate; python text_bot.py"
